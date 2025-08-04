@@ -1,0 +1,9 @@
+.app-title {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+.empty-message {
+  color: #666;
+  font-style: italic;
+}
