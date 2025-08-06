@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   Dialog,
   DialogTitle,
-  DialogContent,
   DialogActions,
   Button,
   Typography,
@@ -11,24 +10,37 @@ import {
   Box,
 } from '@mui/material';
 
-const Modal = ({ isOpen, onClose, caseData, allCases, onDelete }) => {
-  const [selectedValues, setSelectedValues] = useState({
-    dates: new Set(),
-    participantTypes: new Set(),
-    courts: new Set(),
-    caseTypes: new Set(),
-    results: new Set(),
-  });
+import { CaseData, SelectedValues } from '../types';
+import {
+  getUniqueDates,
+  getUniqueParticipantTypes,
+  getUniqueCourts,
+  getUniqueCaseTypes,
+  getUniqueResults,
+} from '../utils/caseUtils';
+import { createInitialSelectedValues } from '../utils/checkboxUtils';
+import { CourtModalDialogContent } from './CourtModal.styled';
+
+interface CourtModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  caseData: CaseData;
+  allCases: CaseData[];
+  onDelete: (selectedValues: SelectedValues) => void;
+}
+
+const CourtModal: React.FC<CourtModalProps> = ({ isOpen, onClose, caseData, allCases, onDelete }) => {
+  const [selectedValues, setSelectedValues] = useState<SelectedValues>(createInitialSelectedValues());
 
   if (!isOpen) return null;
 
-  const uniqueDates = [...new Set(allCases.map((caseItem) => new Date(caseItem.start_date).toLocaleDateString()))];
-  const uniqueParticipantTypes = [...new Set(caseData.parties.map((party) => party.role_name))];
-  const uniqueCourts = [...new Set(allCases.map((caseItem) => caseItem.court_name))];
-  const uniqueCaseTypes = [...new Set(allCases.map((caseItem) => caseItem.type_name))];
-  const uniqueResults = [...new Set(allCases.map((caseItem) => caseItem.result || 'Не указан'))];
+  const uniqueDates = getUniqueDates(allCases);
+  const uniqueParticipantTypes = getUniqueParticipantTypes(allCases);
+  const uniqueCourts = getUniqueCourts(allCases);
+  const uniqueCaseTypes = getUniqueCaseTypes(allCases);
+  const uniqueResults = getUniqueResults(allCases);
 
-  const handleCheckboxChange = (category, value) => {
+  const handleCheckboxChange = (category: keyof SelectedValues, value: string) => {
     setSelectedValues((prev) => {
       const newSet = new Set(prev[category]);
       if (newSet.has(value)) {
@@ -48,7 +60,7 @@ const Modal = ({ isOpen, onClose, caseData, allCases, onDelete }) => {
   return (
     <Dialog open={isOpen} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>Уникальные значения категорий</DialogTitle>
-      <DialogContent dividers sx={{ maxHeight: '70vh', overflowY: 'auto' }}>
+      <CourtModalDialogContent dividers>
         <Box mb={2}>
           <Typography variant="subtitle1" fontWeight="bold">
             Даты:
@@ -134,7 +146,7 @@ const Modal = ({ isOpen, onClose, caseData, allCases, onDelete }) => {
             />
           ))}
         </Box>
-      </DialogContent>
+      </CourtModalDialogContent>
       <DialogActions>
         <Button onClick={handleDelete} color="error" variant="contained">
           Удалить
@@ -147,4 +159,4 @@ const Modal = ({ isOpen, onClose, caseData, allCases, onDelete }) => {
   );
 };
 
-export default Modal;
+export default CourtModal;

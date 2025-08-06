@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import {
-  Card,
   CardContent,
   Button,
   Typography,
-  Grid,
   Collapse,
   List,
   ListItem,
@@ -12,65 +10,70 @@ import {
   Link,
   Box
 } from '@mui/material';
+
 import ExpandMore from '@mui/icons-material/ExpandMore';
 import ExpandLess from '@mui/icons-material/ExpandLess';
-import Modal from './CourtModal';
 
-const CourtCase = ({ caseData, allCases, onDelete }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const matchedParty = caseData.parties.find((party) => party.is_matched);
-  const participantType = matchedParty ? matchedParty.role_name : 'Неизвестно';
+import { CaseData, SelectedValues } from '../types';
+import { getParticipantType, formatDate } from '../utils/caseUtils';
+import { 
+  StyledCard, 
+  StyledClickableBox, 
+  StyledExpandedContent, 
+  StyledTypography 
+} from './CourtCase.styled';
+
+interface CourtCaseProps {
+  caseData: CaseData;
+  allCases: CaseData[];
+  onDelete: (selectedValues: SelectedValues) => void;
+}
+
+const CourtCase: React.FC<CourtCaseProps> = ({ caseData, allCases, onDelete }) => {
+  const [isExpanded, setIsExpanded] = useState<boolean>(false);
+  const participantType = getParticipantType(caseData);
 
   return (
-    <Card sx={{ mb: 2 }}>
+    <StyledCard>
       <CardContent>
-                    <Button
-              variant="contained"
-              color="success"
-              onClick={() => setIsModalOpen(true)}
-              sx={{ mr: 1 }}
-            >
-              Категории
-            </Button>
-        <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} md={10} onClick={() => setIsExpanded(!isExpanded)} sx={{ cursor: 'pointer' }}>
-            <Grid container spacing={1}>
-              <Grid item xs={12} sm={2}>
+        <Box display="flex" alignItems="center" gap={2}>
+          <StyledClickableBox flex={1} onClick={() => setIsExpanded(!isExpanded)}>
+            <Box display="flex" flexWrap="wrap" gap={1}>
+              <Box minWidth="150px">
                 <Typography>
-                  <strong>Дата:</strong> {new Date(caseData.start_date).toLocaleDateString()}
+                  <strong>Дата:</strong> {formatDate(caseData.start_date)}
                 </Typography>
-              </Grid>
-              <Grid item xs={12} sm={2}>
+              </Box>
+              <Box minWidth="150px">
                 <Typography>
                   <strong>Тип участника:</strong> {participantType}
                 </Typography>
-              </Grid>
-              <Grid item xs={12} sm={3}>
+              </Box>
+              <Box minWidth="200px">
                 <Typography>
                   <strong>Суд:</strong> {caseData.court_name}
                 </Typography>
-              </Grid>
-              <Grid item xs={12} sm={2}>
+              </Box>
+              <Box minWidth="150px">
                 <Typography>
                   <strong>Вид дела:</strong> {caseData.type_name}
                 </Typography>
-              </Grid>
-              <Grid item xs={12} sm={3}>
+              </Box>
+              <Box minWidth="150px">
                 <Typography>
                   <strong>Результат:</strong> {caseData.result || 'Не указан'}
                 </Typography>
-              </Grid>
-            </Grid>
-          </Grid>
-          <Grid item xs={12} md={2} textAlign={{ xs: 'left', md: 'right' }}>
+              </Box>
+            </Box>
+          </StyledClickableBox>
+          <Box>
             <Button onClick={() => setIsExpanded(!isExpanded)}>
               {isExpanded ? <ExpandMore /> : <ExpandLess />}
             </Button>
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
         <Collapse in={isExpanded}>
-          <Box sx={{ mt: 2, p: 2, bgcolor: '#f5f5f5', borderRadius: 1 }}>
+          <StyledExpandedContent>
             <Typography>
               <strong>Номер дела:</strong> {caseData.number}
             </Typography>
@@ -83,9 +86,9 @@ const CourtCase = ({ caseData, allCases, onDelete }) => {
             <Typography>
               <strong>Описание:</strong> {caseData.papers_pretty.join(', ')}
             </Typography>
-            <Typography sx={{ mt: 1 }}>
+            <StyledTypography>
               <strong>Стороны:</strong>
-            </Typography>
+            </StyledTypography>
             <List>
               {caseData.parties.map((party, index) => (
                 <ListItem key={index} disablePadding>
@@ -96,9 +99,9 @@ const CourtCase = ({ caseData, allCases, onDelete }) => {
                 </ListItem>
               ))}
             </List>
-            <Typography sx={{ mt: 1 }}>
+            <StyledTypography>
               <strong>Прогресс:</strong>
-            </Typography>
+            </StyledTypography>
             <List>
               {caseData.progress.map((step, index) => (
                 <ListItem key={index} disablePadding>
@@ -109,9 +112,9 @@ const CourtCase = ({ caseData, allCases, onDelete }) => {
                 </ListItem>
               ))}
             </List>
-            <Typography sx={{ mt: 1 }}>
+            <StyledTypography>
               <strong>Ссылки:</strong>
-            </Typography>
+            </StyledTypography>
             <List>
               {caseData.links.card.map((link, index) => (
                 <ListItem key={index} disablePadding>
@@ -121,17 +124,10 @@ const CourtCase = ({ caseData, allCases, onDelete }) => {
                 </ListItem>
               ))}
             </List>
-          </Box>
+          </StyledExpandedContent>
         </Collapse>
       </CardContent>
-      <Modal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        caseData={caseData}
-        allCases={allCases}
-        onDelete={onDelete}
-      />
-    </Card>
+    </StyledCard>
   );
 };
 
